@@ -1,6 +1,8 @@
 package TpFinalProgramacionIII.Biblioteca.Controllers;
 
-import TpFinalProgramacionIII.Biblioteca.Models.Usuario;
+
+import TpFinalProgramacionIII.Biblioteca.DTO.UsuarioCreateDTO;
+import TpFinalProgramacionIII.Biblioteca.DTO.UsuarioDTO;
 import TpFinalProgramacionIII.Biblioteca.Services.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,40 +13,50 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/usuarios")
-public class UsuarioController
-{
+@RequestMapping("/api/usuarios")
+public class UsuarioController {
+
     @Autowired
     private UsuarioService usuarioService;
 
-    @PostMapping //Acordate que el método Post es para crear
+    @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Usuario> crearPrestamo(@Valid @RequestBody Usuario usuario) {
-        return ResponseEntity.ok(usuarioService.crearUsuario(usuario));
+    public ResponseEntity<UsuarioDTO> crearUsuario(@Valid @RequestBody UsuarioCreateDTO usuarioDTO) {
+        return ResponseEntity.ok(usuarioService.crearUsuario(usuarioDTO));
     }
 
-    @GetMapping //El método Get es para obtener
-    public ResponseEntity<List<Usuario>> obtenerTodos() {
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UsuarioDTO>> obtenerTodos() {
         return ResponseEntity.ok(usuarioService.obtenerTodos());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> obtenerPorId(@PathVariable Long id) { //La anotación PathVariable lo que hace es capturar el valor de la variable id (la cual es la que aparece en GetMapping) y la transforma a tipo Long. Pues, llega en formato String. El método usa ese id para buscar el usuario deseado.
+    @PreAuthorize("hasRole('ADMIN') or principal.id == #id")
+    public ResponseEntity<UsuarioDTO> obtenerPorId(@PathVariable Long id) {
         return usuarioService.obtenerPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}") //El método PUT es para actualizar.
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Usuario> actualizarPrestamo(@PathVariable Long id, @Valid @RequestBody Usuario usuario) {
-        return ResponseEntity.ok(usuarioService.actualizarUsuario(id, usuario));
+    public ResponseEntity<UsuarioDTO> actualizarUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioCreateDTO usuarioDTO) {
+        return ResponseEntity.ok(usuarioService.actualizarUsuario(id, usuarioDTO));
     }
 
-    @DeleteMapping("/{id}") //El método Delete es para borrar.
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> eliminarPrestamo(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
         usuarioService.eliminarUsuario(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/email")
+    @PreAuthorize("hasRole('ADMIN') or principal.username == #email")
+    public ResponseEntity<UsuarioDTO> obtenerPorEmail(@RequestParam String email) {
+        return usuarioService.obtenerPorEmail(email)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

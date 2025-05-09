@@ -1,6 +1,7 @@
 package TpFinalProgramacionIII.Biblioteca.Controllers;
 
 
+import TpFinalProgramacionIII.Biblioteca.DTO.LibroDTO;
 import TpFinalProgramacionIII.Biblioteca.Models.Libro;
 import TpFinalProgramacionIII.Biblioteca.Services.LibroService;
 import jakarta.validation.Valid;
@@ -20,17 +21,17 @@ public class LibroController {
 
     @PostMapping //Anotación proporcionada por Spring MVC. Acordate que el método Post es para crear
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Libro> crearLibro(@Valid @RequestBody Libro libro) { //@Valid lo que hace es comprobar que el objeto libro cuente con las validaciones definidas por las anotaciones, que me proporciona la API que nos da Jakarta Validation, en la clase Libro (por ejemplo, el size, los campos obligatorios...). @RequestBody, anotación proporcionada por el módulo de Spring Spring MVC, deserializa lo que se envía a la solicitud http (una instancia de Libro, en este caso).
-        return ResponseEntity.ok(libroService.crearLibro(libro));
+    public ResponseEntity<LibroDTO> crearLibro(@Valid @RequestBody com.biblioteca.dto.LibroCreateDTO libroCreateDTO) { //@Valid lo que hace es comprobar que el objeto libro cuente con las validaciones definidas por las anotaciones, que me proporciona la API que nos da Jakarta Validation, en la clase Libro (por ejemplo, el size, los campos obligatorios...). @RequestBody, anotación proporcionada por el módulo de Spring Spring MVC, deserializa lo que se envía a la solicitud http (una instancia de Libro, en este caso).
+        return ResponseEntity.ok(libroService.crearLibro(libroCreateDTO));
     }
 
     @GetMapping //El método Get es para obtener
-    public ResponseEntity<List<Libro>> obtenerTodos() {
+    public ResponseEntity<List<LibroDTO>> obtenerTodos() {
         return ResponseEntity.ok(libroService.obtenerTodos());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Libro> obtenerPorId(@PathVariable Long id) //La anotación PathVariable, proporcionada por el módulo de Spring Spring MVC, lo que hace es capturar el valor de la variable id (la cual es la que aparece en GetMapping) y la transforma a tipo Long. Pues, llega en formato String. El método usa ese id para buscar el libro deseado.
+    public ResponseEntity<LibroDTO> obtenerPorId(@PathVariable Long id) //La anotación PathVariable, proporcionada por el módulo de Spring Spring MVC, lo que hace es capturar el valor de la variable id (la cual es la que aparece en GetMapping) y la transforma a tipo Long. Pues, llega en formato String. El método usa ese id para buscar el libro deseado.
     {
         return libroService.obtenerPorId(id)
                 .map(ResponseEntity::ok)
@@ -39,9 +40,9 @@ public class LibroController {
 
     @PutMapping("/{id}") //El método PUT es para actualizar.
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Libro> actualizarLibro(@PathVariable Long id, @Valid @RequestBody Libro libro)
+    public ResponseEntity<LibroDTO> actualizarLibro(@PathVariable Long id, @Valid @RequestBody com.biblioteca.dto.LibroCreateDTO libroCreateDTO)
     {
-        return ResponseEntity.ok(libroService.actualizarLibro(id, libro));
+        return ResponseEntity.ok(libroService.actualizarLibro(id, libroCreateDTO));
     }
 
     @DeleteMapping("/{id}") //El método Delete es para borrar.
@@ -52,17 +53,17 @@ public class LibroController {
     }
 
     @GetMapping("/buscar/titulo")
-    public ResponseEntity<List<Libro>> buscarPorTitulo(@RequestParam String titulo) {
+    public ResponseEntity<List<LibroDTO>> buscarPorTitulo(@RequestParam String titulo) {
         return ResponseEntity.ok(libroService.buscarPorTitulo(titulo));
     }
 
     @GetMapping("/buscar/autor")
-    public ResponseEntity<List<Libro>> buscarPorAutor(@RequestParam String autor) {
+    public ResponseEntity<List<LibroDTO>> buscarPorAutor(@RequestParam String autor) {
         return ResponseEntity.ok(libroService.buscarPorAutor(autor));
     }
 
     @GetMapping("/disponibles")
-    public ResponseEntity<List<Libro>> buscarDisponibles() {
+    public ResponseEntity<List<LibroDTO>> buscarDisponibles() {
         return ResponseEntity.ok(libroService.buscarDisponibles());
     }
 }

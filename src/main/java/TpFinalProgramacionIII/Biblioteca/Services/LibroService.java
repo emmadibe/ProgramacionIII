@@ -1,50 +1,85 @@
 package TpFinalProgramacionIII.Biblioteca.Services;
 
+
+import TpFinalProgramacionIII.Biblioteca.DTO.LibroDTO;
 import TpFinalProgramacionIII.Biblioteca.Models.Libro;
 import TpFinalProgramacionIII.Biblioteca.Repository.LibroRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
-import lombok.Data;
+import java.util.stream.Collectors;
 
-@Service //LE digo al Spring que esta clase es un servicio. Esto me permite inyectar dependencias a partir de la anotación @Autowired. Con esa anotación, el contenedor ya sabe que la clase es un Bean.
+@Service
 public class LibroService {
-    @Autowired //Inyecto dependencias por campo. En este caso, inyecto una dependencia de LibroRepository.
+    @Autowired
     private LibroRepository libroRepository;
 
-    //Cada método de la clase servicio corresponde a una operación de negocio: crear un libro, eliminar un libro, atualizar un libro, obtener todos los libros...
+    public LibroDTO crearLibro(com.biblioteca.dto.LibroCreateDTO libroDTO) {
+        Libro libro = new Libro();
+        libro.setTitulo(libroDTO.getTitulo());
+        libro.setAutor(libroDTO.getAutor());
+        libro.setIsbn(libroDTO.getIsbn());
+        libro.setAnioPublicacion(libroDTO.getAnioPublicacion());
+        libro.setDisponible(true);
 
-    public Libro crearLibro(Libro libro) {
-        return libroRepository.save(libro);
+        Libro savedLibro = libroRepository.save(libro);
+        return mapToDTO(savedLibro);
     }
 
-    public List<Libro> obtenerTodos() {
-        return libroRepository.findAll();
+    public List<LibroDTO> obtenerTodos() {
+        return libroRepository.findAll().stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
-    public Optional<Libro> obtenerPorId(Long id) {
-        return libroRepository.findById(id);
+    public Optional<LibroDTO> obtenerPorId(Long id) {
+        return libroRepository.findById(id).map(this::mapToDTO);
     }
 
-    public Libro actualizarLibro(Long id, Libro libro) {
-        libro.setId(id);
-        return libroRepository.save(libro);
+    public LibroDTO actualizarLibro(Long id, com.biblioteca.dto.LibroCreateDTO libroDTO) {
+        Libro libro = libroRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
+        libro.setTitulo(libroDTO.getTitulo());
+        libro.setAutor(libroDTO.getAutor());
+        libro.setIsbn(libroDTO.getIsbn());
+        libro.setAnioPublicacion(libroDTO.getAnioPublicacion());
+
+        Libro updatedLibro = libroRepository.save(libro);
+        return mapToDTO(updatedLibro);
     }
 
     public void eliminarLibro(Long id) {
         libroRepository.deleteById(id);
     }
 
-    public List<Libro> buscarPorTitulo(String titulo) {
-        return libroRepository.findByTituloContainingIgnoreCase(titulo);
+    public List<LibroDTO> buscarPorTitulo(String titulo) {
+        return libroRepository.findByTituloContainingIgnoreCase(titulo).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Libro> buscarPorAutor(String autor) {
-        return libroRepository.findByAutorContainingIgnoreCase(autor);
+    public List<LibroDTO> buscarPorAutor(String autor) {
+        return libroRepository.findByAutorContainingIgnoreCase(autor).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
-    public List<Libro> buscarDisponibles() {
-        return libroRepository.findByDisponibleTrue();
+    public List<LibroDTO> buscarDisponibles() {
+        return libroRepository.findByDisponibleTrue().stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    private LibroDTO mapToDTO(Libro libro) {
+        LibroDTO dto = new LibroDTO();
+        dto.setId(libro.getId());
+        dto.setTitulo(libro.getTitulo());
+        dto.setAutor(libro.getAutor());
+        dto.setIsbn(libro.getIsbn());
+        dto.setAnioPublicacion(libro.getAnioPublicacion());
+        dto.setDisponible(libro.isDisponible());
+        return dto;
     }
 }

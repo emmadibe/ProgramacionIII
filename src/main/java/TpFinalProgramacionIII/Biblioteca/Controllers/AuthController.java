@@ -1,5 +1,7 @@
 package TpFinalProgramacionIII.Biblioteca.Controllers;
 
+import TpFinalProgramacionIII.Biblioteca.DTO.UsuarioCreateDTO;
+import TpFinalProgramacionIII.Biblioteca.DTO.UsuarioDTO;
 import TpFinalProgramacionIII.Biblioteca.Models.Usuario;
 import TpFinalProgramacionIII.Biblioteca.Services.JwtService;
 import TpFinalProgramacionIII.Biblioteca.Services.UsuarioService;
@@ -36,8 +38,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Usuario> register(@RequestBody Usuario usuario) {
-        return ResponseEntity.ok(usuarioService.crearUsuario(usuario));
+    public ResponseEntity<UsuarioDTO> register(@RequestBody UsuarioCreateDTO usuarioCreateDTO) {
+        return ResponseEntity.ok(usuarioService.crearUsuario(usuarioCreateDTO));
     }
 }
 
